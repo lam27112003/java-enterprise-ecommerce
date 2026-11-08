@@ -1,0 +1,23 @@
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
+import { LoadingState } from '../../../shared/ui/LoadingState';
+
+/** Requires an authenticated ADMIN (DB roles via /auth tokens). */
+export function AdminRoute() {
+  const { status, isAuthenticated, isAdmin } = useAuth();
+  const location = useLocation();
+
+  if (status === 'bootstrapping') {
+    return <LoadingState label="Checking session…" />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return <Outlet />;
+}

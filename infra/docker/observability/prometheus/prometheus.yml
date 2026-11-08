@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrapes backend on the Compose network with HTTP Basic (U1).
+  # ACTUATOR_PROMETHEUS_PUBLIC must remain false — do not open prometheus anonymously.
+  - job_name: ecommerce-backend
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus-local-change-me
+    static_configs:
+      - targets:
+          # When observability profile runs with app profile: use service DNS.
+          - backend:8080
+        labels:
+          instance: backend
+    # Fallback for host-only backend (observability without app profile):
+    # add another job targeting host.docker.internal:8080 with the same basic_auth.
+  - job_name: ecommerce-backend-host
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus-local-change-me
+    static_configs:
+      - targets:
+          - host.docker.internal:8080
+        labels:
+          instance: backend-host

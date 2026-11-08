@@ -1,0 +1,76 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ecommerce_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: true
+    # Omit migration_postgresql — H2 rejects partial unique indexes.
+    locations: classpath:db/migration,classpath:db/testdata
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      auto-startup: false
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.connectiontimeout: 500
+      mail.smtp.timeout: 500
+      mail.smtp.writetimeout: 500
+
+app:
+  environment: test
+  kafka:
+    enabled: false
+  stripe:
+    mock: true
+    secret-key: sk_test_fake
+    publishable-key: pk_test_fake
+    webhook-secret: whsec_test_fake
+  outbox:
+    dispatch-delay-ms: 600000
+  notification:
+    from: noreply@localhost
+  security:
+    api-docs-public: true
+    actuator-prometheus-public: true
+    enforce-secure-jwt-secret: false
+    jwt:
+      secret: test-secret-key-must-be-at-least-32-characters-long
+      issuer: ecommerce-platform-test
+      access-token-ttl-minutes: 15
+      refresh-token-ttl-days: 14
+    rate-limit:
+      enabled: true
+      login-per-minute: 1000
+      register-per-minute: 1000
+      refresh-per-minute: 1000
+      window-seconds: 60
+      checkout-per-account-per-minute: 1000
+      checkout-per-ip-per-minute: 1000
+      pay-per-account-per-minute: 1000
+      pay-per-ip-per-minute: 1000
+      admin-refund-confirm-per-account-per-minute: 1000
+      admin-refund-confirm-per-ip-per-minute: 1000
+      admin-refund-reopen-per-account-per-minute: 1000
+      admin-refund-reopen-per-ip-per-minute: 1000
+
+management:
+  health:
+    redis:
+      enabled: false
+    mail:
+      enabled: false

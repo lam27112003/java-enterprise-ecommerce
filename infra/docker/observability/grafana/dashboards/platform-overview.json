@@ -1,0 +1,139 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "HTTP request rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (method, status, uri)",
+          "legendFormat": "{{method}} {{status}} {{uri}}"
+        }
+      ],
+      "id": 1
+    },
+    {
+      "title": "4xx / 5xx ratio",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1e-9)",
+          "legendFormat": "4xx ratio"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1e-9)",
+          "legendFormat": "5xx ratio"
+        }
+      ],
+      "id": 2
+    },
+    {
+      "title": "HTTP latency p95 / p99",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "id": 3
+    },
+    {
+      "title": "JVM memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+          "legendFormat": "heap used {{id}}"
+        }
+      ],
+      "id": 4
+    },
+    {
+      "title": "JVM GC / CPU",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum[5m])",
+          "legendFormat": "gc pause rate"
+        },
+        {
+          "expr": "process_cpu_usage",
+          "legendFormat": "process cpu"
+        },
+        {
+          "expr": "system_cpu_usage",
+          "legendFormat": "system cpu"
+        }
+      ],
+      "id": 5
+    },
+    {
+      "title": "HikariCP pool",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_active",
+          "legendFormat": "active"
+        },
+        {
+          "expr": "hikaricp_connections_idle",
+          "legendFormat": "idle"
+        },
+        {
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "pending"
+        }
+      ],
+      "id": 6
+    },
+    {
+      "title": "Redis / Kafka health",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "redis_commands_duration_seconds_count or on() vector(0)",
+          "legendFormat": "redis cmds (proxy)"
+        }
+      ],
+      "id": 7,
+      "description": "Use /actuator/health dependency probes in ops; Redis/Kafka binder meters vary by profile."
+    },
+    {
+      "title": "Rate-limit rejections",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum(rate(rate_limit_rejections_total[5m])) by (bucket)",
+          "legendFormat": "{{bucket}}"
+        }
+      ],
+      "id": 8
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["ecommerce", "phase8"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "Ecommerce Platform Overview",
+  "uid": "ecommerce-platform-overview",
+  "version": 1
+}

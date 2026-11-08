@@ -1,0 +1,164 @@
+spring:
+  application:
+    name: ecommerce-platform
+  profiles:
+    default: local
+  servlet:
+    multipart:
+      max-file-size: ${CATALOG_MULTIPART_MAX:5MB}
+      max-request-size: ${CATALOG_MULTIPART_MAX:5MB}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    # migration_postgresql holds PG-only scripts (partial indexes). H2 test profile omits it.
+    locations: classpath:db/migration,classpath:db/migration_postgresql
+  data:
+    redis:
+      timeout: 2s
+  kafka:
+    listener:
+      auto-startup: ${app.kafka.enabled:true}
+    consumer:
+      group-id: ecommerce-platform
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+    prometheus:
+      # Spring Security still gates the path; this only enables the scrape endpoint itself.
+      access: unrestricted
+  health:
+    mail:
+      enabled: false
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  defaults:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  # Spring Boot 3.5 relocated product-specific export properties:
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    # Metrics-first; enable when OTEL_EXPORTER_OTLP_ENDPOINT is set (P8-D4).
+    enabled: ${TRACING_ENABLED:false}
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  environment: ${APP_ENVIRONMENT:local}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  kafka:
+    enabled: true
+    topics:
+      platform-health: platform.health
+      order-paid: order.paid
+      payment-succeeded: payment.succeeded
+      payment-failed: payment.failed
+      refund-requested: refund.requested
+  stripe:
+    mock: ${STRIPE_MOCK:false}
+    secret-key: ${STRIPE_SECRET_KEY:${STRIPE_API_KEY:}}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  outbox:
+    dispatch-delay-ms: ${OUTBOX_DISPATCH_DELAY_MS:2000}
+    dispatch-initial-delay-ms: ${OUTBOX_DISPATCH_INITIAL_DELAY_MS:2000}
+  notification:
+    from: ${MAIL_FROM:noreply@localhost}
+  security:
+    api-docs-public: ${API_DOCS_PUBLIC:false}
+    actuator-prometheus-public: ${ACTUATOR_PROMETHEUS_PUBLIC:false}
+    actuator-prometheus-username: ${ACTUATOR_PROMETHEUS_USERNAME:}
+    actuator-prometheus-password: ${ACTUATOR_PROMETHEUS_PASSWORD:}
+    enforce-secure-jwt-secret: ${ENFORCE_SECURE_JWT_SECRET:false}
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: ${JWT_ISSUER:ecommerce-platform}
+      access-token-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
+      refresh-token-ttl-days: ${JWT_REFRESH_TTL_DAYS:14}
+    rate-limit:
+      enabled: ${RATE_LIMIT_ENABLED:true}
+      login-per-minute: ${RATE_LIMIT_LOGIN_PER_MINUTE:10}
+      register-per-minute: ${RATE_LIMIT_REGISTER_PER_MINUTE:5}
+      refresh-per-minute: ${RATE_LIMIT_REFRESH_PER_MINUTE:30}
+      window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:60}
+      checkout-per-account-per-minute: ${RATE_LIMIT_CHECKOUT_PER_ACCOUNT_PER_MINUTE:30}
+      checkout-per-ip-per-minute: ${RATE_LIMIT_CHECKOUT_PER_IP_PER_MINUTE:60}
+      pay-per-account-per-minute: ${RATE_LIMIT_PAY_PER_ACCOUNT_PER_MINUTE:30}
+      pay-per-ip-per-minute: ${RATE_LIMIT_PAY_PER_IP_PER_MINUTE:60}
+      admin-refund-confirm-per-account-per-minute: ${RATE_LIMIT_ADMIN_REFUND_CONFIRM_PER_ACCOUNT_PER_MINUTE:20}
+      admin-refund-confirm-per-ip-per-minute: ${RATE_LIMIT_ADMIN_REFUND_CONFIRM_PER_IP_PER_MINUTE:40}
+      admin-refund-reopen-per-account-per-minute: ${RATE_LIMIT_ADMIN_REFUND_REOPEN_PER_ACCOUNT_PER_MINUTE:10}
+      admin-refund-reopen-per-ip-per-minute: ${RATE_LIMIT_ADMIN_REFUND_REOPEN_PER_IP_PER_MINUTE:20}
+    trusted-proxies: ${TRUSTED_PROXIES:}
+  inventory:
+    low-stock-threshold: ${INVENTORY_LOW_STOCK_THRESHOLD:5}
+  catalog:
+    cache:
+      enabled: ${CATALOG_CACHE_ENABLED:true}
+      category-tree-ttl-seconds: ${CATALOG_CACHE_CATEGORY_TTL_SECONDS:300}
+      product-ttl-seconds: ${CATALOG_CACHE_PRODUCT_TTL_SECONDS:180}
+    storage:
+      type: ${CATALOG_STORAGE_TYPE:local}
+      local-base-path: ${CATALOG_STORAGE_LOCAL_PATH:./data/product-images}
+      public-base-url: ${CATALOG_STORAGE_PUBLIC_BASE_URL:/media/products}
+      max-file-size-bytes: ${CATALOG_STORAGE_MAX_BYTES:5242880}
+      s3-bucket: ${CATALOG_STORAGE_S3_BUCKET:}
+      s3-region: ${CATALOG_STORAGE_S3_REGION:us-east-1}
+      s3-public-base-url: ${CATALOG_STORAGE_S3_PUBLIC_BASE_URL:}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+  level:
+    root: INFO
+    com.ecommerce.platform: INFO

@@ -1,0 +1,60 @@
+# Java / Maven
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Node / frontend
+**/node_modules/
+**/dist/
+**/coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+.project
+.classpath
+.settings/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+**/secrets/
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs / runtime
+*.log
+logs/
+tmp/
+temp/
+
+# Docker / compose overrides
+docker-compose.override.yml
+
+# Testcontainers
+.cache/
+testcontainers.properties
+
+# Runtime uploaded product images
+/backend/data/product-images/
+
+# Playwright generated artifacts
+/frontend/playwright-report/
+/frontend/test-results/

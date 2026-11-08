@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  jpa:
+    show-sql: false
+
+app:
+  environment: prod
+  security:
+    api-docs-public: false
+    actuator-prometheus-public: false
+    enforce-secure-jwt-secret: true
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: ${JWT_ISSUER:ecommerce-platform}
+      access-token-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
+      refresh-token-ttl-days: ${JWT_REFRESH_TTL_DAYS:14}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    root: WARN
+    com.ecommerce.platform: INFO
